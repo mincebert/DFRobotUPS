@@ -90,6 +90,13 @@ if args.debug:
 ups = DFRobotUPS(addr=args.addr, bus=args.bus)
 
 
+# if we're debugging, print some information about the UPS HAT
+
+if args.debug:
+    print(f"UPS HAT found with product ID 0x{ups.pid:02x} firmware",
+          "version %d.%d" % ups.fwver)
+
+
 # check we do appear to have a UPS HAT at the specified address/bus
 
 if not ups.present:
@@ -128,7 +135,4 @@ if args.shutdown:
 
 # we're in information mode, so just print that
 
-print("Product ID = 0x%x" % ups.pid)
-print("Firmware version = %d.%d" % ups.fwver)
-print("Battery voltage = %dmV" % ups.vcell)
-print("State of Charge = %.2f%%" % ups.soc)
+print(f"State of Charge (SoC) {ups.soc:.2f}%, battery voltage {ups.vcell}mV")
