@@ -29,6 +29,13 @@ DEFAULT_BUS = 1
 PID = 0xdf
 
 
+# status codes for DFRobotUPS.detect
+
+DETECT_OK = 0           # detected OK
+DETECT_NODEVICE = 1     # no device at I2C address
+DETECT_INVALIDPID = 2   # PID does not match UPS HAT
+
+
 # the numbers of registers for UPS information, as read using
 # smbus.SMBus.read_byte_data()
 
@@ -56,19 +63,40 @@ class DFRobotUPS:
 
     def __init__(self, addr=DEFAULT_ADDR, bus=DEFAULT_BUS):
         """Initialise a UPS object at the specified address and SM bus.
+
+        The constructor will attempt to connect to the UPS HAT and
+        confirm the PID is correct.  The result of this detection will
+        be recorded in the 'detect' attribute, which can take one of the
+        following values:
+
+        * DETECT_OK - the UPS HAT was detected OK (responded and the PID
+        matched).
+
+        * DETECT_NODEVICE - no device responded at the specified I2C
+        address.
+
+        * DETECT_INVALIDPID - a device responded but the PID did not
+        match that of the UPS HAT.
         """
+
 
         self.addr = addr
         self.bus = smbus.SMBus(bus)
 
-        # try to talk to the device for the PID and, if this fails, or
-        # the PID is wrong, set the 'present' flag to False
-        self.present = False
+        # probe the device at the I2C address and set the 'detect'
+        # attribute accordingly
         try:
-            if self._get_pid() == PID:
-                self.present = True
+            pid = self._get_pid()
         except OSError:
-            pass
+            # no device responded at the I2C address
+            self.detect = DETECT_NODEVICE
+        else:
+            if pid != PID:
+                # a device responded but the PID was incorrect
+                self.detect = DETECT_INVALIDPID
+            else:
+                # PID is correct - probably there's a UPS HAT there
+                self.detect = DETECT_OK
 
 
     def _get_pid(self):
@@ -112,23 +140,25 @@ class DFRobotUPS:
 
         Attributes available are:
 
-        * present - whether the UPS HAT appears to be present or not; if
-        False, the remainder of the attributes will be unavailable, save
-        for addr and bus
+        * detect - the detection result of checking for the UPS HAT; see
+        the constructor for more information: if this value is not
+        DETECT_OK, the remainder of the attributes will be unavailable,
+        save for addr and bus.
 
         * addr - the I2C address of the HAT (as requested for the
-        object, not what is necessarily configured on the HAT)
+        object, not what is necessarily configured on the HAT).
 
-        * bus - the SMBus requested
+        * bus - the SMBus requested.
 
         * pid - product identifier (should be 0xdf), else 'present' will
-        be False
+        be False.
 
-        * fwver - a tuple containing the firmware version (major, minor)
+        * fwver - a tuple containing the firmware version (major,
+        minor).
 
-        * vcell - current cell voltage in mV
+        * vcell - current cell voltage in mV.
 
-        * soc - state of charge as a floating point percentage
+        * soc - state of charge as a floating point percentage.
         """
 
         if name == "pid":

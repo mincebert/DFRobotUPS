@@ -8,7 +8,8 @@ import os
 import sys
 from time import sleep
 
-from . import __version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID
+from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID,
+               DETECT_OK)
 
 
 
@@ -104,18 +105,18 @@ if args.debug:
 ups = DFRobotUPS(addr=args.addr, bus=args.bus)
 
 
+# check we do appear to have a UPS HAT at the specified address/bus
+
+if ups.detect != DETECT_OK:
+    print("error: UPS HAT not found")
+    sys.exit(1)
+
+
 # if we're debugging, print some information about the UPS HAT
 
 if args.debug:
     print(f"UPS HAT found with product ID 0x{ups.pid:02x} firmware",
           "version %d.%d" % ups.fwver)
-
-
-# check we do appear to have a UPS HAT at the specified address/bus
-
-if not ups.present:
-    print("error: UPS HAT not found")
-    sys.exit(1)
 
 
 # if we're in shutdown polling mode, do that
