@@ -9,7 +9,7 @@ import sys
 from time import sleep
 
 from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID,
-               DETECT_OK)
+               DETECT_OK, DETECT_NODEVICE, DETECT_INVALIDPID)
 
 
 
@@ -100,15 +100,21 @@ if args.debug:
     print(f"DFRobotUPS HAT on bus {args.bus} at I2C address 0x{args.addr:02x}")
 
 
-# get the UPS object to poll SoC
+# try to detect the UPS
 
 ups = DFRobotUPS(addr=args.addr, bus=args.bus)
 
-
-# check we do appear to have a UPS HAT at the specified address/bus
-
 if ups.detect != DETECT_OK:
-    print("error: UPS HAT not found")
+    if ups.detect == DETECT_NODEVICE:
+        print("error: no device found at I2C address", file=sys.stderr)
+
+    elif ups.detect == DETECT_INVALIDPID:
+        print("error: device PID invalid for UPS HAT", file=sys.stderr)
+
+    else:
+        print(f"error: detection failed - unknown reason: {ups.detect}",
+              file=sys.stderr)
+
     sys.exit(1)
 
 
