@@ -2,6 +2,14 @@
 
 
 
+__version__ = "0.1"
+
+
+
+# --- imports ---
+
+
+
 import smbus
 
 
@@ -87,6 +95,16 @@ class DFRobotUPS:
     def __getattribute__(self, name):
         """Return information about the UPS as attributes.  This is the
         recommended way to retrieve information.
+
+        Attributes available are:
+
+        * pid - product identifier (should be 0xDF)
+
+        * fwver - a tuple containing the firmware version (major, minor)
+
+        * vcell - current cell voltage in mV
+
+        * soc - state of charge as a floating point percentage
         """
 
         if name == "pid":
