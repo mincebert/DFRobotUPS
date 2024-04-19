@@ -114,7 +114,7 @@ if args.shutdown:
         soc = ups.soc
 
         if args.debug:
-            print(f"SoC currently at {soc}% shutdown at {args.percent}%")
+            print(f"SoC currently at {soc:.2f}%, shutdown at {args.percent}%")
 
         if soc <= args.percent:
             break
