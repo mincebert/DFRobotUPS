@@ -21,6 +21,7 @@ from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID,
 
 DEFAULT_PERCENT = 7
 DEFAULT_INTERVAL = 60
+DEFAULT_RETRY = 10
 
 
 
@@ -79,6 +80,13 @@ parser.add_argument(
     help=f"I2C SMBus number for UPS HAT (default: {DEFAULT_BUS})")
 
 parser.add_argument(
+    "-r", "--retry",
+    type=int,
+    default=DEFAULT_RETRY,
+    help="number of times to try connecting to the UPS HAT (default:"
+         f" {DEFAULT_RETRY})")
+
+parser.add_argument(
     "-d", "--debug",
     action="store_true",
     help="enable debugging output")
@@ -102,7 +110,23 @@ if args.debug:
 
 # try to detect the UPS
 
-ups = DFRobotUPS(addr=args.addr, bus=args.bus)
+tries = 0
+while True:
+    tries += 1
+    ups = DFRobotUPS(addr=args.addr, bus=args.bus)
+
+    if ups.detect == DETECT_OK:
+        break
+
+    if args.debug:
+        print(f"Connection failed error code {ups.detect}, try {tries} of"
+              f" {args.retry}")
+
+    # if we've run out of tries, stop
+    if tries == args.retry:
+        break
+
+    sleep(1)
 
 if ups.detect != DETECT_OK:
     if ups.detect == DETECT_NODEVICE:
