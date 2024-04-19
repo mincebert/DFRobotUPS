@@ -12,6 +12,17 @@ from . import __version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID
 
 
 
+# --- constants ---
+
+
+
+# default values for command line parameters
+
+DEFAULT_PERCENT = 7
+DEFAULT_INTERVAL = 60
+
+
+
 # --- parse arguments ---
 
 
@@ -36,14 +47,16 @@ parser.add_argument(
 parser.add_argument(
     "-p", "--percent",
     type=int,
-    default=7,
-    help="State of Charge (SoC) percentage at which to trigger shutdown")
+    default=DEFAULT_PERCENT,
+    help="State of Charge (SoC) percentage at which to trigger shutdown"
+         f" shutdown (default: {DEFAULT_PERCENT})")
 
 parser.add_argument(
     "-i", "--interval",
     type=int,
-    default=60,
-    help="number of seconds between polls of the battery SoC")
+    default=DEFAULT_INTERVAL,
+    help="number of seconds between polls of the battery SoC (default:"
+         f" {DEFAULT_INTERVAL})")
 
 parser.add_argument(
     "-c", "--cmd",
@@ -55,13 +68,14 @@ parser.add_argument(
     "-a", "--addr",
     type=functools.partial(int, base=0),
     default=DEFAULT_ADDR,
-    help="I2C address for UPS HAT; can be specified in hex as 0xNN")
+    help="I2C address for UPS HAT; can be specified in hex as 0xNN"
+         f" (default: 0x{DEFAULT_ADDR:02x})")
 
 parser.add_argument(
     "-b", "--bus",
     type=int,
     default=DEFAULT_BUS,
-    help="I2C SMBus number for UPS HAT")
+    help=f"I2C SMBus number for UPS HAT (default: {DEFAULT_BUS})")
 
 parser.add_argument(
     "-d", "--debug",
