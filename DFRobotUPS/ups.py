@@ -24,6 +24,11 @@ DEFAULT_ADDR = 0x10
 DEFAULT_BUS = 1
 
 
+# the PID for the UPS HAT as returned by an I2C register (below)
+
+PID = 0xdf
+
+
 # the numbers of registers for UPS information, as read using
 # smbus.SMBus.read_byte_data()
 
@@ -56,9 +61,18 @@ class DFRobotUPS:
         self.addr = addr
         self.bus = smbus.SMBus(bus)
 
+        # try to talk to the device for the PID and, if this fails, or
+        # the PID is wrong, set the 'present' flag to False
+        self.present = False
+        try:
+            if self._get_pid() == PID:
+                self.present = True
+        except OSError:
+            pass
+
 
     def _get_pid(self):
-        """Return the product identifier, which should be 0xDF.
+        """Return the product identifier, which should be 0xdf.
         """
 
         return self.bus.read_byte_data(self.addr, REG_PID)
@@ -98,7 +112,17 @@ class DFRobotUPS:
 
         Attributes available are:
 
-        * pid - product identifier (should be 0xDF)
+        * present - whether the UPS HAT appears to be present or not; if
+        False, the remainder of the attributes will be unavailable, save
+        for addr and bus
+
+        * addr - the I2C address of the HAT (as requested for the
+        object, not what is necessarily configured on the HAT)
+
+        * bus - the SMBus requested
+
+        * pid - product identifier (should be 0xdf), else 'present' will
+        be False
 
         * fwver - a tuple containing the firmware version (major, minor)
 

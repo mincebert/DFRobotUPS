@@ -5,9 +5,10 @@
 import argparse
 import functools
 import os
+import sys
 from time import sleep
 
-from . import __version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS
+from . import __version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID
 
 
 
@@ -81,12 +82,19 @@ args = parser.parse_args()
 
 
 if args.debug:
-    print(f"DFRobotUPS HAT at I2C address 0x{args.addr:02x} on bus {args.bus}")
+    print(f"DFRobotUPS HAT on bus {args.bus} at I2C address 0x{args.addr:02x}")
 
 
 # get the UPS object to poll SoC
 
 ups = DFRobotUPS(addr=args.addr, bus=args.bus)
+
+
+# check we do appear to have a UPS HAT at the specified address/bus
+
+if not ups.present:
+    print("error: UPS HAT not found")
+    sys.exit(1)
 
 
 # if we're in shutdown polling mode, do that
