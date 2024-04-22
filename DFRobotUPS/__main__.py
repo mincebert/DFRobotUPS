@@ -4,6 +4,8 @@
 
 import argparse
 import functools
+import logging
+import logging.handlers
 import os
 import sys
 from time import sleep
@@ -100,12 +102,31 @@ args = parser.parse_args()
 
 
 
+# --- create logger ---
+
+
+
+# create logger object and set the overall level according to the command
+# line option
+logger = logging.getLogger("DFRobotUPS")
+logger.setLevel(logging.DEBUG if args.debug else logging.WARNING)
+
+# create logging handler with formatter for stderr
+stderr_loghandler = logging.StreamHandler(stream=sys.stderr)
+stderr_logformatter = logging.Formatter("%(levelname)s: %(message)s")
+stderr_loghandler.setFormatter(stderr_logformatter)
+
+# add stderr handler as a logger destination
+logger.addHandler(stderr_loghandler)
+
+
+
 # --- main ---
 
 
 
-if args.debug:
-    print(f"DFRobotUPS HAT on bus {args.bus} at I2C address 0x{args.addr:02x}")
+logger.info(
+    f"DFRobotUPS HAT on bus {args.bus} at I2C address 0x{args.addr:02x}")
 
 
 # try to detect the UPS
@@ -118,9 +139,9 @@ while True:
     if ups.detect == DETECT_OK:
         break
 
-    if args.debug:
-        print(f"Connection failed error code {ups.detect}, try {tries} of"
-              f" {args.retry}")
+    logger.warning(
+        f"connection failed error code {ups.detect}, try {tries} of"
+        f" {args.retry}")
 
     # if we've run out of tries, stop
     if tries == args.retry:
@@ -130,49 +151,46 @@ while True:
 
 if ups.detect != DETECT_OK:
     if ups.detect == DETECT_NODEVICE:
-        print("error: no device found at I2C address", file=sys.stderr)
+        logger.error("no device found at I2C address")
 
     elif ups.detect == DETECT_INVALIDPID:
-        print("error: device PID invalid for UPS HAT", file=sys.stderr)
+        logger.error("device PID invalid for UPS HAT")
 
     else:
-        print(f"error: detection failed - unknown reason: {ups.detect}",
-              file=sys.stderr)
+        logger.error(f"detection failed - unknown reason: {ups.detect}")
 
     sys.exit(1)
 
 
-# if we're debugging, print some information about the UPS HAT
+# log some information about the UPS and, if we're debugging print it
+# there too
 
-if args.debug:
-    print(f"UPS HAT found with product ID 0x{ups.pid:02x} firmware",
-          "version %d.%d" % ups.fwver)
+logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x} firmware"
+            + (" version %d.%d" % ups.fwver))
 
 
 # if we're in shutdown polling mode, do that
 
 if args.shutdown:
-    if args.debug:
-        print("Polling SoC for shutdown with command:", *args.cmd)
+    logger.info(
+        f"Polling SoC for shutdown at {args.percent}% with command:"
+        f" { ' '.join(args.cmd) }")
 
     while True:
         soc = ups.soc
 
-        if args.debug:
-            print(f"SoC currently at {soc:.2f}%, shutdown at {args.percent}%")
+        logger.debug(
+            f"SoC currently at {soc:.2f}%, shutdown at {args.percent}%")
 
         if soc <= args.percent:
             break
 
-        if args.debug:
-            print(f"Sleeping for {args.interval}s")
+        logger.debug(f"Sleeping for {args.interval}s")
         sleep(args.interval)
 
-    if args.debug:
-        print(f"Triggering shutdown with command:", *args.cmd)
+    logger.info(f"Triggering shutdown with command: { ' '.join(args.cmd) }")
 
     # execute the shutdown command, which will replace this process
-
     os.execv(args.cmd[0], args.cmd)
 
     # we'll never get here
