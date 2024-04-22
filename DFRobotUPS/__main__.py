@@ -107,19 +107,30 @@ args = parser.parse_args()
 
 
 
-# create logger object and set the overall level according to the command
-# line option
+# create logger object and set the overall debugging level (we'll
+# override this in each handler, below, but this level stops anything
+# being logged that is less severe, in any handler)
 logger = logging.getLogger("DFRobotUPS")
-logger.setLevel(logging.DEBUG if args.debug >= 2
-                    else logging.INFO if args.debug >= 1
-                    else logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
-# create logging handler with formatter for stderr
+# create logging handler with formatter for syslog - we always log these
+# at level INFO
+syslog_loghandler = logging.handlers.SysLogHandler(address="/dev/log")
+syslog_logformatter = logging.Formatter("%(name)s[%(process)d]: %(message)s")
+syslog_loghandler.setFormatter(syslog_logformatter)
+syslog_loghandler.setLevel(logging.INFO)
+
+# create logging handler with formatter for stderr - the level here
+# depends on the command line options specified
 stderr_loghandler = logging.StreamHandler(stream=sys.stderr)
 stderr_logformatter = logging.Formatter("%(levelname)s: %(message)s")
 stderr_loghandler.setFormatter(stderr_logformatter)
+stderr_loghandler.setLevel(logging.DEBUG if args.debug >= 2
+                               else logging.INFO if args.debug >= 1
+                               else logging.WARNING)
 
-# add stderr handler as a logger destination
+# add the handlers as logger destinations
+logger.addHandler(syslog_loghandler)
 logger.addHandler(stderr_loghandler)
 
 
@@ -191,7 +202,8 @@ if args.shutdown:
         logger.debug(f"Sleeping for {args.interval}s")
         sleep(args.interval)
 
-    logger.info(f"Triggering shutdown with command: { ' '.join(args.cmd) }")
+    logger.info(f"SoC at {soc:.2f}% - triggering shutdown with command:"
+                f" { ' '.join(args.cmd) }")
 
     # execute the shutdown command, which will replace this process
     os.execv(args.cmd[0], args.cmd)
