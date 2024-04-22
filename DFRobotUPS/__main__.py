@@ -90,8 +90,9 @@ parser.add_argument(
 
 parser.add_argument(
     "-d", "--debug",
-    action="store_true",
-    help="enable debugging output")
+    action="count",
+    default=0,
+    help="increase debugging level (default: 0, max: 2)")
 
 parser.add_argument(
     "-v", "--version",
@@ -109,7 +110,9 @@ args = parser.parse_args()
 # create logger object and set the overall level according to the command
 # line option
 logger = logging.getLogger("DFRobotUPS")
-logger.setLevel(logging.DEBUG if args.debug else logging.WARNING)
+logger.setLevel(logging.DEBUG if args.debug >= 2
+                    else logging.INFO if args.debug >= 1
+                    else logging.WARNING)
 
 # create logging handler with formatter for stderr
 stderr_loghandler = logging.StreamHandler(stream=sys.stderr)
