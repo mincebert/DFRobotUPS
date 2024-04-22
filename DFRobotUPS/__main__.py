@@ -209,23 +209,23 @@ logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x} firmware"
 
 if args.shutdown:
     logger.info(
-        f"Polling SoC for shutdown at {args.percent}% with command:"
-        f" { ' '.join(args.cmd) }")
+        f"initial SoC {ups.soc:.2f}%, polling for shutdown at"
+        f" {args.percent}% with command: { ' '.join(args.cmd) }")
 
     while True:
         soc = ups.soc
 
-        logger.debug(
-            f"SoC currently at {soc:.2f}%, shutdown at {args.percent}%")
-
         if soc <= args.percent:
             break
 
-        logger.debug(f"Sleeping for {args.interval}s")
+        logger.debug(
+            f"current SoC {soc:.2f}% - sleeping for {args.interval}s")
+
         sleep(args.interval)
 
-    logger.info(f"SoC at {soc:.2f}% - triggering shutdown with command:"
-                f" { ' '.join(args.cmd) }")
+    logger.info(
+        f"current SoC {soc:.2f}% has reached shutdown trigger at"
+        f" {args.percent}% - executing:" f" { ' '.join(args.cmd) }")
 
     # execute the shutdown command, which will replace this process
     os.execv(args.cmd[0], args.cmd)
