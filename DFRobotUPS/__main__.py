@@ -19,16 +19,36 @@ from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID,
 
 
 
-# default values for command line parameters
+# default and ranges of values for command line parameters
 
 DEFAULT_PERCENT = 7
 DEFAULT_INTERVAL = 60
 DEFAULT_RETRY = 10
 
+MIN_PERCENT = 5
+MAX_PERCENT = 95
+
+MIN_INTERVAL = 1
+MAX_INTERVAL = 600
+
 
 
 # --- parse arguments ---
 
+
+
+# factory function for range-checked integer as type of ArgumentParser
+# arguments
+
+def int_range(min=0, max=100):
+    def int_range_check(s):
+        v = int(s)
+        if min <= v <= max:
+            return v
+        else:
+            raise argparse.ArgumentTypeError(f"value not in range {min}-{max}")
+
+    return int_range_check
 
 
 parser = argparse.ArgumentParser(
@@ -50,16 +70,18 @@ parser.add_argument(
 
 parser.add_argument(
     "-p", "--percent",
-    type=int,
+    type=int_range(MIN_PERCENT, MAX_PERCENT),
     default=DEFAULT_PERCENT,
     help="State of Charge (SoC) percentage at which to trigger shutdown"
-         f" shutdown (default: {DEFAULT_PERCENT})")
+         f" shutdown (min: {MIN_PERCENT}, max: {MAX_PERCENT}, default: "
+         f" {DEFAULT_PERCENT})")
 
 parser.add_argument(
     "-i", "--interval",
-    type=int,
+    type=int_range(MIN_INTERVAL, MAX_INTERVAL),
     default=DEFAULT_INTERVAL,
-    help="number of seconds between polls of the battery SoC (default:"
+    help="number of seconds between polls of the battery SoC (min:"
+         f" {MIN_INTERVAL}, max: {MAX_INTERVAL}, default:"
          f" {DEFAULT_INTERVAL})")
 
 parser.add_argument(
@@ -92,7 +114,7 @@ parser.add_argument(
     "-d", "--debug",
     action="count",
     default=0,
-    help="increase debugging level (default: 0, max: 2)")
+    help="increase debugging level (max: 2, default: 0)")
 
 parser.add_argument(
     "-v", "--version",
