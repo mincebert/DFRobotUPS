@@ -135,12 +135,12 @@ args = parser.parse_args()
 logger = logging.getLogger("DFRobotUPS")
 logger.setLevel(logging.DEBUG)
 
-# create logging handler with formatter for syslog - we always log these
-# at level INFO
+# create logging handler with formatter for syslog - we only log above
+# WARNING here if the shutdown mode is enabled
 syslog_loghandler = logging.handlers.SysLogHandler(address="/dev/log")
 syslog_logformatter = logging.Formatter("%(name)s[%(process)d]: %(message)s")
 syslog_loghandler.setFormatter(syslog_logformatter)
-syslog_loghandler.setLevel(logging.INFO)
+syslog_loghandler.setLevel(logging.INFO if args.shutdown else logging.WARNING)
 
 # create logging handler with formatter for stderr - the level here
 # depends on the command line options specified
