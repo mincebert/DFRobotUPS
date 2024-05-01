@@ -206,7 +206,7 @@ if ups.detect != DETECT_OK:
 # log some information about the UPS and, if we're debugging print it
 # there too
 
-logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x} firmware"
+logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
             + (" version %d.%d" % ups.fwver))
 
 
