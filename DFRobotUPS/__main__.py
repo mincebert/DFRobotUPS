@@ -88,6 +88,7 @@ parser.add_argument(
     "-c", "--cmd",
     nargs="+",
     default=("/sbin/halt", ),
+    metavar=("CMD", "ARG"),
     help="command to run to trigger shutdown")
 
 parser.add_argument(
