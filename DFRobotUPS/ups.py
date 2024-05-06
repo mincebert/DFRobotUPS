@@ -28,9 +28,10 @@ PID = 0xdf
 # status codes for DFRobotUPS.detect
 
 DETECT_OK         = 0   # detected OK
-DETECT_NOSMBUS    = 1   # error opening smbus
-DETECT_NODEVICE   = 2   # no device at I2C address
-DETECT_INVALIDPID = 3   # PID does not match UPS HAT
+DETECT_NOSMBUS    = 1   # not found error opening smbus
+DETECT_SMBUSPERM  = 2   # permission error opening smbus
+DETECT_NODEVICE   = 3   # no device at I2C address
+DETECT_INVALIDPID = 4   # PID does not match UPS HAT
 
 
 # the numbers of registers for UPS information, as read using
@@ -82,6 +83,9 @@ class DFRobotUPS:
             self.bus = smbus.SMBus(bus)
         except FileNotFoundError:
             self.detect = DETECT_NOSMBUS
+            return
+        except PermissionError:
+            self.detect = DETECT_SMBUSPERM
             return
 
         # probe the device at the I2C address and set the 'detect'
@@ -185,6 +189,8 @@ class DFRobotUPS:
             return "OK"
         elif self.detect == DETECT_NOSMBUS:
             return "I2C smbus not found"
+        elif self.detect == DETECT_SMBUSPERM:
+            return "permission error opening I2C smbus"
         elif self.detect == DETECT_NODEVICE:
             return "no device at I2C address"
         elif self.detect == DETECT_INVALIDPID:
