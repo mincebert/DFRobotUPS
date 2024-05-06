@@ -180,6 +180,23 @@ class DFRobotUPS:
         return super().__getattribute__(name)
 
 
+    def detectstr(self):
+        """Return a string describing the type of failure when trying
+        to detect the UPS HAT.
+        """
+
+        if self.detect == DETECT_OK:
+            return "OK"
+        elif self.detect == DETECT_NOSMBUS:
+            return "I2C smbus not found"
+        elif self.detect == DETECT_NODEVICE:
+            return "no device at I2C address"
+        elif self.detect == DETECT_INVALIDPID:
+            return "device at I2C address has incorrect PID"
+        else:
+            return "unknown error"
+
+
     def setaddr(self, addr):
         """Change the I2C device address used by the UPS to one
         supplied.  After this change, the module must be powercycled for

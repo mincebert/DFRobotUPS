@@ -182,8 +182,8 @@ while True:
         break
 
     logger.warning(
-        f"connection failed error code {ups.detect}, try {tries} of"
-        f" {args.retry}")
+        f"connection failed error code {ups.detect}"
+        f" ({ups.detectstr()}), try {tries} of {args.retry}")
 
     # if we've run out of tries, stop
     if tries == args.retry:
