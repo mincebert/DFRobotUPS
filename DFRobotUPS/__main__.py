@@ -11,7 +11,7 @@ import sys
 from time import sleep
 
 from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID,
-               DETECT_OK, DETECT_NODEVICE, DETECT_INVALIDPID)
+               DETECT_OK, DETECT_NOSMBUS, DETECT_NODEVICE, DETECT_INVALIDPID)
 
 
 

@@ -7,7 +7,7 @@ __version__ = "0.4.4"
 
 
 from .ups import (DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID, DETECT_OK,
-                  DETECT_NODEVICE, DETECT_INVALIDPID)
+                  DETECT_NOSMBUS, DETECT_NODEVICE, DETECT_INVALIDPID)
 
 
 
@@ -17,6 +17,7 @@ __all__ = [
     "DEFAULT_BUS",
     "PID",
     "DETECT_OK",
+    "DETECT_NOSMBUS",
     "DETECT_NODEVICE",
     "DETECT_INVALIDPID",
 ]

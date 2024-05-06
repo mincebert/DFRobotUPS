@@ -32,8 +32,9 @@ PID = 0xdf
 # status codes for DFRobotUPS.detect
 
 DETECT_OK = 0           # detected OK
-DETECT_NODEVICE = 1     # no device at I2C address
-DETECT_INVALIDPID = 2   # PID does not match UPS HAT
+DETECT_NOSMBUS = 1      # error opening smbus
+DETECT_NODEVICE = 2     # no device at I2C address
+DETECT_INVALIDPID = 3   # PID does not match UPS HAT
 
 
 # the numbers of registers for UPS information, as read using
@@ -81,7 +82,11 @@ class DFRobotUPS:
 
 
         self.addr = addr
-        self.bus = smbus.SMBus(bus)
+        try:
+            self.bus = smbus.SMBus(bus)
+        except FileNotFoundError:
+            self.detect = DETECT_NOSMBUS
+            return
 
         # probe the device at the I2C address and set the 'detect'
         # attribute accordingly
@@ -90,13 +95,15 @@ class DFRobotUPS:
         except OSError:
             # no device responded at the I2C address
             self.detect = DETECT_NODEVICE
-        else:
-            if pid != PID:
-                # a device responded but the PID was incorrect
-                self.detect = DETECT_INVALIDPID
-            else:
-                # PID is correct - probably there's a UPS HAT there
-                self.detect = DETECT_OK
+            return
+
+        if pid != PID:
+            # a device responded but the PID was incorrect
+            self.detect = DETECT_INVALIDPID
+            return
+
+        # PID is correct - probably there's a UPS HAT there
+        self.detect = DETECT_OK
 
 
     def _get_pid(self):
