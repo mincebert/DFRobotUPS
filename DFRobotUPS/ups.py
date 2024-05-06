@@ -31,22 +31,22 @@ PID = 0xdf
 
 # status codes for DFRobotUPS.detect
 
-DETECT_OK = 0           # detected OK
-DETECT_NOSMBUS = 1      # error opening smbus
-DETECT_NODEVICE = 2     # no device at I2C address
+DETECT_OK         = 0   # detected OK
+DETECT_NOSMBUS    = 1   # error opening smbus
+DETECT_NODEVICE   = 2   # no device at I2C address
 DETECT_INVALIDPID = 3   # PID does not match UPS HAT
 
 
 # the numbers of registers for UPS information, as read using
 # smbus.SMBus.read_byte_data()
 
-REG_ADDR = 0x00
-REG_PID = 0x01
-REG_FWVER = 0x02
-REG_VCELLHI = 0x03
-REG_VCELLLO = 0x04
-REG_SOCHI = 0x05
-REG_SOCLO = 0x06
+REG_ADDR     = 0x00
+REG_PID      = 0x01
+REG_FWVER    = 0x02
+REG_VCELL_HI = 0x03
+REG_VCELL_LO = 0x04
+REG_SOC_HI   = 0x05
+REG_SOC_LO   = 0x06
 
 
 
@@ -126,8 +126,8 @@ class DFRobotUPS:
        """Return the current voltage of the cell in mV.
        """
 
-       return ((((self.bus.read_byte_data(self.addr, REG_VCELLHI) & 0xf) << 8)
-                + self.bus.read_byte_data(self.addr, REG_VCELLLO))
+       return ((((self.bus.read_byte_data(self.addr, REG_VCELL_HI) & 0xf) << 8)
+                + self.bus.read_byte_data(self.addr, REG_VCELL_LO))
                * 1.25)
 
 
@@ -136,8 +136,8 @@ class DFRobotUPS:
         point percentage.
         """
 
-        return (((self.bus.read_byte_data(self.addr, REG_SOCHI) << 8)
-                 + self.bus.read_byte_data(self.addr, REG_SOCLO))
+        return (((self.bus.read_byte_data(self.addr, REG_SOC_HI) << 8)
+                 + self.bus.read_byte_data(self.addr, REG_SOC_LO))
                 / 256)
 
 
