@@ -133,11 +133,14 @@ args = parser.parse_args()
 # create logger object and set the overall debugging level (we'll
 # override this in each handler, below, but this level stops anything
 # being logged that is less severe, in any handler)
+
 logger = logging.getLogger("DFRobotUPS")
 logger.setLevel(logging.DEBUG)
 
+
 # create logging handler with formatter for stderr - the level here
 # depends on the command line options specified
+
 stderr_loghandler = logging.StreamHandler(stream=sys.stderr)
 stderr_logformatter = logging.Formatter("%(levelname)s: %(message)s")
 stderr_loghandler.setFormatter(stderr_logformatter)
@@ -145,10 +148,14 @@ stderr_loghandler.setLevel(logging.DEBUG if args.debug >= 2
                                else logging.INFO if args.debug >= 1
                                else logging.WARNING)
 
+
 # add the stderr handler as a logger destination
+
 logger.addHandler(stderr_loghandler)
 
+
 # create a syslog handler, if we're running in shutdown mode
+
 if args.shutdown:
     # create logging handler with formatter for syslog - we always log
     # at INFO level here
