@@ -167,8 +167,8 @@ if args.shutdown:
 
 
 
-logger.info(f"searching for UPS HAT on bus {args.bus} at I2C address"
-            f" 0x{args.addr:02x}")
+logger.info(f"startup: searching for UPS HAT on bus {args.bus} at I2C"
+            f" address 0x{args.addr:02x}")
 
 
 # try to detect the UPS
@@ -230,7 +230,7 @@ if args.shutdown:
         sleep(args.interval)
 
     logger.info(
-        f"current SoC {soc:.2f}% has reached shutdown trigger at"
+        f"shutdown: current SoC {soc:.2f}% has reached trigger at"
         f" {args.percent}% - executing:" f" { ' '.join(args.cmd) }")
 
     # execute the shutdown command, which will replace this process
