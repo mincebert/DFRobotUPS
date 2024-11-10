@@ -70,8 +70,7 @@ parser.add_argument(
     "-s", "--shutdown",
     action="store_true",
     help="poll the battery SoC and initiate system shutdown when level"
-         " drops below the defined level; the default is not to do this"
-         " but display information about the UPS HAT instead")
+         " drops below the defined level")
 
 parser.add_argument(
     "-p", "--percent",
