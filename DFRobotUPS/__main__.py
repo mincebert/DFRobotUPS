@@ -178,8 +178,8 @@ if args.shutdown:
 
 
 
-logger.info(f"startup: searching for UPS HAT on bus {args.bus} at I2C"
-            f" address 0x{args.addr:02x}")
+logger.info(f"DFRobotUPS v{__version__} startup: searching for UPS HAT"
+            f" on bus {args.bus} at I2C address 0x{args.addr:02x}")
 
 
 # try to detect the UPS
