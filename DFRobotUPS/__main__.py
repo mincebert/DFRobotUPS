@@ -60,7 +60,15 @@ parser = argparse.ArgumentParser(
 
     # we want the epilog help output to be printed as it and not
     # reformatted or line wrapped
-    formatter_class=argparse.RawDescriptionHelpFormatter)
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+
+    # text to display after the command line arguments help
+    epilog="By default, the current charge status and battery voltage"
+           " will be displayed and the program will terminate.  Using"
+           " the -s option will cause the program to poll the charge"
+           " level and run a shutdown command, when it drops below a"
+           " specified level."
+    )
 
 parser.add_argument(
     "-s", "--shutdown",
