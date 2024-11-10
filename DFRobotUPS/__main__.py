@@ -24,6 +24,7 @@ from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID,
 DEFAULT_PERCENT = 7
 DEFAULT_INTERVAL = 60
 DEFAULT_RETRY = 10
+DEFAULT_CMD = "/sbin/halt"
 
 MIN_PERCENT = 5
 MAX_PERCENT = 95
@@ -87,9 +88,9 @@ parser.add_argument(
 parser.add_argument(
     "-c", "--cmd",
     nargs="+",
-    default=("/sbin/halt", ),
+    default=(DEFAULT_CMD, ),
     metavar=("CMD", "ARG"),
-    help="command to run to trigger shutdown")
+    help=f"command to run to trigger shutdown (default: {DEFAULT_CMD})")
 
 parser.add_argument(
     "-a", "--addr",
