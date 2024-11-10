@@ -58,10 +58,6 @@ parser = argparse.ArgumentParser(
     # isn't necessarily correct, but it looks better than that
     prog="DFRobotUPS",
 
-    # we want the epilog help output to be printed as it and not
-    # reformatted or line wrapped
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-
     # text to display after the command line arguments help
     epilog="By default, the current charge status and battery voltage"
            " will be displayed and the program will terminate.  Using"
