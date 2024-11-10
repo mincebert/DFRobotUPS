@@ -228,7 +228,8 @@ logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
 if args.shutdown:
     logger.info(
         f"initial SoC {ups.soc:.2f}%, polling for shutdown at"
-        f" {args.percent}% with command: { ' '.join(args.cmd) }")
+        f" {args.percent}% every {args.interval}s, triggering command:"
+        f" { ' '.join(args.cmd) }")
 
     while True:
         soc = ups.soc
@@ -236,8 +237,8 @@ if args.shutdown:
         if soc <= args.percent:
             break
 
-        logger.debug(
-            f"current SoC {soc:.2f}% - sleeping for {args.interval}s")
+        logger.debug(f"current SoC {soc:.2f}% above shutdown threshold at"
+                     f" {args.percent}% - sleeping for {args.interval}s")
 
         sleep(args.interval)
 
