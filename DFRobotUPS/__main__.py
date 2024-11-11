@@ -229,7 +229,7 @@ logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
 if args.shutdown:
     logger.info(
         f"initial SoC {ups.soc:.2f}%, polling for shutdown at"
-        f" {args.percent}% every {args.interval}s, triggering command:"
+        f" {args.percent}% every {args.interval}s, shutdown command:"
         f" { ' '.join(args.cmd) }")
 
     while True:
