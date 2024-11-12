@@ -167,7 +167,8 @@ if args.shutdown:
     syslog_logformatter = logging.Formatter(
                               "%(name)s[%(process)d]: %(message)s")
     syslog_loghandler.setFormatter(syslog_logformatter)
-    syslog_loghandler.setLevel(logging.INFO)
+    syslog_loghandler.setLevel(logging.DEBUG if args.debug >= 2
+                                   else logging.INFO)
 
     # add the syslog handler as a logger destination
     logger.addHandler(syslog_loghandler)
