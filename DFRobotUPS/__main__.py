@@ -178,7 +178,7 @@ if args.shutdown:
 
 
 
-logger.info("startup: DFRobotUPS v{__version__}")
+logger.info(f"startup: DFRobotUPS v{__version__}")
 
 
 # try to detect the UPS
