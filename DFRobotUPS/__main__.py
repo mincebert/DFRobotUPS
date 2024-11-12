@@ -243,7 +243,7 @@ if args.shutdown:
 
         sleep(args.interval)
 
-    logger.info(
+    logger.critical(
         f"shutdown: current SoC {soc:.2f}% has reached trigger at"
         f" {args.percent}% - executing:" f" { ' '.join(args.cmd) }")
 
