@@ -34,6 +34,43 @@ MAX_INTERVAL = 600
 
 
 
+# --- functions ---
+
+
+
+def ups_monitor(logger, ups, percent, interval, cmd):
+    """This function implements the main loop which polls the State of
+    Charge (SoC) of the UPS battery and triggers the shutdown command,
+    when it falls below the specified percentage.
+    """
+
+    logger.info(
+        f"initial SoC {ups.soc:.2f}%, polling for shutdown at"
+        f" {percent}% every {interval}s, shutdown command:"
+        f" { ' '.join(cmd) }")
+
+    while True:
+        soc = ups.soc
+
+        if soc <= percent:
+            break
+
+        logger.debug(f"current SoC {soc:.2f}% above shutdown threshold"
+                     f" at {percent}% - sleeping for {interval}s")
+
+        sleep(interval)
+
+    logger.critical(
+        f"shutdown: current SoC {soc:.2f}% has reached trigger at"
+        f" {percent}% - executing:" f" { ' '.join(cmd) }")
+
+    # execute the shutdown command, which will replace this process
+    os.execv(cmd[0], cmd)
+
+    # we'll never get here
+
+
+
 # --- parse arguments ---
 
 
@@ -228,30 +265,8 @@ logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
 # if we're in shutdown polling mode, do that
 
 if args.shutdown:
-    logger.info(
-        f"initial SoC {ups.soc:.2f}%, polling for shutdown at"
-        f" {args.percent}% every {args.interval}s, shutdown command:"
-        f" { ' '.join(args.cmd) }")
-
-    while True:
-        soc = ups.soc
-
-        if soc <= args.percent:
-            break
-
-        logger.debug(f"current SoC {soc:.2f}% above shutdown threshold at"
-                     f" {args.percent}% - sleeping for {args.interval}s")
-
-        sleep(args.interval)
-
-    logger.critical(
-        f"shutdown: current SoC {soc:.2f}% has reached trigger at"
-        f" {args.percent}% - executing:" f" { ' '.join(args.cmd) }")
-
-    # execute the shutdown command, which will replace this process
-    os.execv(args.cmd[0], args.cmd)
-
-    # we'll never get here
+    ups_monitor(logger=logger, ups=ups, percent=args.percent,
+                interval=args.interval, cmd=args.cmd)
 
 
 # we're in information mode, so just print that
