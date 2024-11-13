@@ -40,7 +40,6 @@ MAX_INTERVAL = 600
 
 
 
-
 def create_logger(shutdown, foreground, debug):
     """Create a return the logger for events.
 
@@ -99,6 +98,64 @@ def create_logger(shutdown, foreground, debug):
 
 
     return logger
+
+
+
+def detect_ups(bus, addr, retry, logger):
+    """Try to detect the UPS on the specified bus and I2C address,
+    retrying if required.  A DFRobotUPS() object is returned, or None,
+    if a UPS could not be found.
+    """
+
+
+    logger.info(f"searching for UPS HAT on bus {bus} at I2C address"
+                f" 0x{addr:02x}")
+
+
+    # loop, trying to detect the UPS
+
+    tries = 0
+    while True:
+        tries += 1
+        ups = DFRobotUPS(addr=addr, bus=bus)
+
+        if ups.detect == DETECT_OK:
+            break
+
+        logger.warning(
+            f"connection failed error code {ups.detect}"
+            f" ({ups.detectstr()}), try {tries} of {retry}")
+
+        # if we've run out of tries, stop
+        if tries == retry:
+            break
+
+        sleep(1)
+
+
+    # if the UPS could not be found, log the type of error encountered
+    # and return None (for 'not found')
+
+    if ups.detect != DETECT_OK:
+        if ups.detect == DETECT_NODEVICE:
+            logger.error("no device found at I2C address")
+
+        elif ups.detect == DETECT_INVALIDPID:
+            logger.error("device PID invalid for UPS HAT")
+
+        else:
+            logger.error(f"detection failed - unknown reason: {ups.detect}")
+
+        return None
+
+
+    # log some information about the UPS
+
+    logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
+                + (" version %d.%d" % ups.fwver))
+
+
+    return ups
 
 
 
@@ -252,45 +309,10 @@ logger.info(f"startup: DFRobotUPS v{__version__}")
 
 # try to detect the UPS
 
-logger.info(f"searching for UPS HAT on bus {args.bus} at I2C address"
-            f" 0x{args.addr:02x}")
+ups = detect_ups(bus=args.bus, addr=args.addr, retry=args.retry, logger=logger)
 
-tries = 0
-while True:
-    tries += 1
-    ups = DFRobotUPS(addr=args.addr, bus=args.bus)
-
-    if ups.detect == DETECT_OK:
-        break
-
-    logger.warning(
-        f"connection failed error code {ups.detect}"
-        f" ({ups.detectstr()}), try {tries} of {args.retry}")
-
-    # if we've run out of tries, stop
-    if tries == args.retry:
-        break
-
-    sleep(1)
-
-if ups.detect != DETECT_OK:
-    if ups.detect == DETECT_NODEVICE:
-        logger.error("no device found at I2C address")
-
-    elif ups.detect == DETECT_INVALIDPID:
-        logger.error("device PID invalid for UPS HAT")
-
-    else:
-        logger.error(f"detection failed - unknown reason: {ups.detect}")
-
+if ups is None:
     sys.exit(1)
-
-
-# log some information about the UPS and, if we're debugging print it
-# there too
-
-logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
-            + (" version %d.%d" % ups.fwver))
 
 
 # if we're in shutdown polling mode, do that
