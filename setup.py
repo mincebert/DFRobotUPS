@@ -30,6 +30,10 @@ setup(
     url='https://github.com/mincebert/DFRobotUPS',
     author='Robert Franklin',
 
+    install_requires=[
+        "python-daemon",
+    ],
+
     # For a list of valid classifiers, see https://pypi.org/classifiers/
     classifiers=[
         # How mature is this project? Common values are

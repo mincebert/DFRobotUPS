@@ -10,6 +10,8 @@ import os
 import sys
 from time import sleep
 
+import daemon
+
 from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, DETECT_OK,
                DETECT_NODEVICE, DETECT_INVALIDPID)
 
@@ -108,6 +110,12 @@ parser.add_argument(
     action="store_true",
     help="poll the battery SoC and initiate system shutdown when level"
          " drops below the defined level")
+
+parser.add_argument(
+    "-f", "--foreground",
+    action="store_true",
+    help="when running with the -s option, stay running in the"
+         " foreground - don't run in the background as a daemon")
 
 parser.add_argument(
     "-p", "--percent",
@@ -265,8 +273,18 @@ logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
 # if we're in shutdown polling mode, do that
 
 if args.shutdown:
-    ups_monitor(logger=logger, ups=ups, percent=args.percent,
-                interval=args.interval, cmd=args.cmd)
+    if args.foreground:
+        # run in the foreground
+        ups_monitor(logger=logger, ups=ups, percent=args.percent,
+                    interval=args.interval, cmd=args.cmd)
+
+    else:
+        # run in the background as a daemon
+        with daemon.DaemonContext():
+            ups_monitor(logger=logger, ups=ups, percent=args.percent,
+                        interval=args.interval, cmd=args.cmd)
+
+    # we'll never get here
 
 
 # we're in information mode, so just print that
