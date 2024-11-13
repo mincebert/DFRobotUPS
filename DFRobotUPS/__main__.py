@@ -159,7 +159,28 @@ def detect_ups(bus, addr, retry, logger):
 
 
 
-def ups_monitor(logger, ups, percent, interval, cmd):
+def setup(shutdown, foreground, debug):
+    "Set up the logger and detect the UPS."
+
+    # create a logger appropriate to the mode we're running in
+    logger = create_logger(shutdown=shutdown, foreground=foreground,
+                        debug=debug)
+
+    logger.info(f"startup: DFRobotUPS v{__version__}")
+
+    # try to detect the UPS
+    ups = detect_ups(bus=args.bus, addr=args.addr, retry=args.retry,
+                     logger=logger)
+
+    # abort if we couldn't find the UPS (detect_ups() will log an error)
+    if ups is None:
+        sys.exit(1)
+        
+    return ups, logger
+    
+
+
+def ups_monitor(ups, percent, interval, cmd, logger):
     """This function implements the main loop which polls the State of
     Charge (SoC) of the UPS battery and triggers the shutdown command,
     when it falls below the specified percentage.
@@ -189,6 +210,20 @@ def ups_monitor(logger, ups, percent, interval, cmd):
     os.execv(cmd[0], cmd)
 
     # we'll never get here
+
+
+
+def run(shutdown, foreground, percent, interval, cmd, debug):
+    "Setup and monitor the UPS, triggering shutdown."
+
+    # set up the logger and detect the UPS
+    ups, logger = setup(shutdown, foreground, debug)
+
+    # run the main monitoring and shutdown loop
+    ups_monitor(ups, percent, interval, cmd, logger)
+
+    # we'll never get here
+
 
 
 
@@ -298,40 +333,24 @@ args = parser.parse_args()
 
 
 
-# create a logger appropriate to the mode we're running in
-
-logger = create_logger(shutdown=args.shutdown, foreground=args.foreground,
-                       debug=args.debug)
-
-
-logger.info(f"startup: DFRobotUPS v{__version__}")
-
-
-# try to detect the UPS
-
-ups = detect_ups(bus=args.bus, addr=args.addr, retry=args.retry, logger=logger)
-
-if ups is None:
-    sys.exit(1)
-
-
-# if we're in shutdown polling mode, do that
-
 if args.shutdown:
     if args.foreground:
-        # run in the foreground
-        ups_monitor(logger=logger, ups=ups, percent=args.percent,
-                    interval=args.interval, cmd=args.cmd)
+        # we're running in the foreground - don't become a daemon
+        run(shutdown=args.shutdown, foreground=args.foreground,
+            percent=args.percent, interval=args.interval, cmd=args.cmd,
+            debug=args.debug)
 
     else:
-        # run in the background as a daemon
+        # we're running as a daemon
         with daemon.DaemonContext():
-            ups_monitor(logger=logger, ups=ups, percent=args.percent,
-                        interval=args.interval, cmd=args.cmd)
-
-    # we'll never get here
+            run(shutdown=args.shutdown, foreground=args.foreground,
+                percent=args.percent, interval=args.interval, cmd=args.cmd,
+                debug=args.debug)
 
 
 # we're in information mode, so just print that
+
+ups, logger = setup(shutdown=args.shutdown, foreground=args.foreground,
+                    debug=args.debug)
 
 print(f"State of Charge (SoC) {ups.soc:.2f}%, battery voltage {ups.vcell}mV")
