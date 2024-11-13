@@ -40,6 +40,68 @@ MAX_INTERVAL = 600
 
 
 
+
+def create_logger(shutdown, foreground, debug):
+    """Create a return the logger for events.
+
+    The logger will include stderr, if the program is running in the
+    foreground (not in shutdown monitor mode, or running the monitor but
+    not as a background daemon).  Logging to syslog will be included if
+    running in shutdown monitor mode.
+    """
+
+
+    # create logger object and set the overall debugging level (we'll
+    # override this in each handler, below, but this level stops
+    # anything being logged that is less severe, in any handler)
+
+    logger = logging.getLogger("DFRobotUPS")
+    logger.setLevel(logging.DEBUG)
+
+
+    # we log to stderr if we're not running in shutdown mode or we are,
+    # but running in the foreground
+
+    if (not shutdown) or foreground:
+        # create logging handler with formatter for stderr - the level
+        # here depends on the command line options specified
+
+        stderr_loghandler = logging.StreamHandler(stream=sys.stderr)
+        stderr_logformatter = logging.Formatter("%(levelname)s: %(message)s")
+        stderr_loghandler.setFormatter(stderr_logformatter)
+        stderr_loghandler.setLevel(logging.DEBUG if debug >= 2
+                                    else logging.INFO if debug >= 1
+                                    else logging.WARNING)
+
+
+        # add the stderr handler as a logger destination
+
+        logger.addHandler(stderr_loghandler)
+
+
+    # create a syslog handler, if we're running in shutdown mode
+
+    if shutdown:
+        # create logging handler with formatter for syslog - we always log
+        # at INFO level here
+
+        syslog_loghandler = logging.handlers.SysLogHandler(address="/dev/log")
+        syslog_logformatter = logging.Formatter(
+                                "%(name)s[%(process)d]: %(message)s")
+        syslog_loghandler.setFormatter(syslog_logformatter)
+        syslog_loghandler.setLevel(logging.DEBUG if debug >= 2
+                                    else logging.INFO)
+
+
+        # add the syslog handler as a logger destination
+
+        logger.addHandler(syslog_loghandler)
+
+
+    return logger
+
+
+
 def ups_monitor(logger, ups, percent, interval, cmd):
     """This function implements the main loop which polls the State of
     Charge (SoC) of the UPS battery and triggers the shutdown command,
@@ -175,53 +237,14 @@ args = parser.parse_args()
 
 
 
-# --- create logger ---
-
-
-
-# create logger object and set the overall debugging level (we'll
-# override this in each handler, below, but this level stops anything
-# being logged that is less severe, in any handler)
-
-logger = logging.getLogger("DFRobotUPS")
-logger.setLevel(logging.DEBUG)
-
-
-# create logging handler with formatter for stderr - the level here
-# depends on the command line options specified
-
-stderr_loghandler = logging.StreamHandler(stream=sys.stderr)
-stderr_logformatter = logging.Formatter("%(levelname)s: %(message)s")
-stderr_loghandler.setFormatter(stderr_logformatter)
-stderr_loghandler.setLevel(logging.DEBUG if args.debug >= 2
-                               else logging.INFO if args.debug >= 1
-                               else logging.WARNING)
-
-
-# add the stderr handler as a logger destination
-
-logger.addHandler(stderr_loghandler)
-
-
-# create a syslog handler, if we're running in shutdown mode
-
-if args.shutdown:
-    # create logging handler with formatter for syslog - we always log
-    # at INFO level here
-    syslog_loghandler = logging.handlers.SysLogHandler(address="/dev/log")
-    syslog_logformatter = logging.Formatter(
-                              "%(name)s[%(process)d]: %(message)s")
-    syslog_loghandler.setFormatter(syslog_logformatter)
-    syslog_loghandler.setLevel(logging.DEBUG if args.debug >= 2
-                                   else logging.INFO)
-
-    # add the syslog handler as a logger destination
-    logger.addHandler(syslog_loghandler)
-
-
-
 # --- main ---
 
+
+
+# create a logger appropriate to the mode we're running in
+
+logger = create_logger(shutdown=args.shutdown, foreground=args.foreground,
+                       debug=args.debug)
 
 
 logger.info(f"startup: DFRobotUPS v{__version__}")
