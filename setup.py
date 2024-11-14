@@ -30,10 +30,6 @@ setup(
     url='https://github.com/mincebert/DFRobotUPS',
     author='Robert Franklin',
 
-    install_requires=[
-        "python-daemon",
-    ],
-
     # For a list of valid classifiers, see https://pypi.org/classifiers/
     classifiers=[
         # How mature is this project? Common values are
@@ -53,7 +49,10 @@ setup(
     keywords='dfrobot ups shutdown power raspberrypi pios',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
-    install_requires=["smbus"],
+    install_requires=[
+        "python-daemon",
+        "smbus",
+    ],
 
     # List additional URLs
     project_urls={
