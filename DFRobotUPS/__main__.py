@@ -175,9 +175,9 @@ def setup(shutdown, foreground, debug):
     # abort if we couldn't find the UPS (detect_ups() will log an error)
     if ups is None:
         sys.exit(1)
-        
+
     return ups, logger
-    
+
 
 
 def ups_monitor(ups, percent, interval, cmd, logger):
@@ -333,7 +333,25 @@ args = parser.parse_args()
 
 
 
+# check if we're running in monitoring and shutdown mode
+
 if args.shutdown:
+    # warn if we're not root as we're unlikely to be able to shut the
+    # system down
+
+    if os.getuid() != 0:
+        # create a temporary logger for this, with the foreground option
+        # forced, to log to the terminal
+
+        logger = create_logger(shutdown=args.shutdown, foreground=True,
+                               debug=args.debug)
+
+        logger.warning("not running as root - unlikely to be able to"
+                       " execute shutdown command")
+
+
+    # execute in either the foreground or as a daemon in the background
+
     if args.foreground:
         # we're running in the foreground - don't become a daemon
         run(shutdown=args.shutdown, foreground=args.foreground,
@@ -348,7 +366,7 @@ if args.shutdown:
                 debug=args.debug)
 
 
-# we're in information mode, so just print that
+# we're just in information mode, so just print that
 
 ups, logger = setup(shutdown=args.shutdown, foreground=args.foreground,
                     debug=args.debug)
