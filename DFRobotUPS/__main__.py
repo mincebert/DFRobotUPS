@@ -254,16 +254,16 @@ parser = argparse.ArgumentParser(
     # text to display after the command line arguments help
     epilog="By default, the current charge status and battery voltage"
            " will be displayed and the program will terminate.  Using"
-           " the -s option will cause the program to poll the charge"
-           " level and run a shutdown command, when it drops below a"
-           " specified level."
+           " the -s option will cause the program to daemonise and"
+           " poll the charge level and run a shutdown command, when it"
+           " drops below a specified level."
     )
 
 parser.add_argument(
     "-s", "--shutdown",
     action="store_true",
-    help="poll the battery SoC and initiate system shutdown when level"
-         " drops below the defined level")
+    help="run as a daemon and poll the battery SoC and initiate system "
+         " shutdown when level drops below the defined level")
 
 parser.add_argument(
     "-f", "--foreground",
