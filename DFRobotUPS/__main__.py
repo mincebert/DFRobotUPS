@@ -40,6 +40,23 @@ MAX_INTERVAL = 600
 
 
 
+def int_range(min=0, max=100):
+    """Factory function for range-checked integer.  This is useful for
+    the 'type' argument for ArgumentParser.add_argument() to validate
+    the input.
+    """
+
+    def int_range_check(s):
+        v = int(s)
+        if min <= v <= max:
+            return v
+        else:
+            raise argparse.ArgumentTypeError(f"value not in range {min}-{max}")
+
+    return int_range_check
+
+
+
 def create_logger(shutdown, foreground, debug):
     """Create a return the logger for events.
 
@@ -229,20 +246,6 @@ def run(shutdown, foreground, percent, interval, cmd, debug):
 
 # --- parse arguments ---
 
-
-
-# factory function for range-checked integer as type of ArgumentParser
-# arguments
-
-def int_range(min=0, max=100):
-    def int_range_check(s):
-        v = int(s)
-        if min <= v <= max:
-            return v
-        else:
-            raise argparse.ArgumentTypeError(f"value not in range {min}-{max}")
-
-    return int_range_check
 
 
 parser = argparse.ArgumentParser(
