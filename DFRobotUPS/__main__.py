@@ -160,7 +160,7 @@ def detect_ups(bus, addr, retry, logger):
 
 
 def setup(shutdown, foreground, debug):
-    "Set up the logger and detect the UPS."
+    """Set up the logger and detect the UPS."""
 
     # create a logger appropriate to the mode we're running in
     logger = create_logger(shutdown=shutdown, foreground=foreground,
@@ -214,7 +214,7 @@ def ups_monitor(ups, percent, interval, cmd, logger):
 
 
 def run(shutdown, foreground, percent, interval, cmd, debug):
-    "Setup and monitor the UPS, triggering shutdown."
+    """Setup and monitor the UPS, triggering shutdown."""
 
     # set up the logger and detect the UPS
     ups, logger = setup(shutdown, foreground, debug)
