@@ -40,6 +40,15 @@ MAX_INTERVAL = 600
 
 
 
+def sgn(n):
+    """Return the sign of a number: 0 if it is 0, -1 if it is negative,
+    or +1 if it is positive.
+    """
+
+    return 0 if n == 0 else -1 if n < 0 else 1
+
+
+
 def int_range(min=0, max=100):
     """Factory function for range-checked integer.  This is useful for
     the 'type' argument for ArgumentParser.add_argument() to validate
@@ -208,12 +217,39 @@ def ups_monitor(ups, percent, interval, cmd, logger):
         f" {percent}% every {interval}s, shutdown command:"
         f" { ' '.join(cmd) }")
 
+    # initialise current SoC and set the charge direction to 0 (= no
+    # direction yet)
+    last_soc = ups.soc
+    soc_direction = 0
+
     while True:
         soc = ups.soc
 
+        # if the SoC is lower than the shutdown percentage, break out of
+        # the monitoring loop and execute the command
         if soc <= percent:
             break
 
+        # work out if we're charging (+1), discharging (-1) or the
+        # unchanged (0)
+        new_soc_direction = sgn(soc - last_soc)
+        if (new_soc_direction != 0) and (new_soc_direction != soc_direction):
+            # there has been a change in SoC AND the direction the SoC
+            # is changing has itself changed - log that
+            if new_soc_direction < 0:
+                logger.info("discharging: SoC falling from high of"
+                            f" {last_soc:.2f}%")
+            elif new_soc_direction > 0:
+                logger.info("charging: SoC rising from low of"
+                            f" {last_soc:.2f}%")
+
+            # store the new direction as the current
+            soc_direction = new_soc_direction
+
+        # update the most recent SoC
+        last_soc = soc
+
+        # debug message (only logged if debugging enabled)
         logger.debug(f"current SoC {soc:.2f}% above shutdown threshold"
                      f" at {percent}% - sleeping for {interval}s")
 
