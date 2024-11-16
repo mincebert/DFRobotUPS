@@ -67,7 +67,7 @@ class DFRobotUPS:
     """
 
 
-    def __init__(self, addr=DEFAULT_ADDR, bus=DEFAULT_BUS):
+    def __init__(self, *, addr=DEFAULT_ADDR, bus=DEFAULT_BUS):
         """Initialise a UPS object at the specified address and SM bus.
 
         The constructor will attempt to connect to the UPS HAT and
