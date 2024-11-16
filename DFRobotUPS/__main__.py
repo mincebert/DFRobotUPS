@@ -10,10 +10,13 @@ import os
 import sys
 from time import sleep
 
-import daemon
-
-from . import (__version__, DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, DETECT_OK,
-               DETECT_NODEVICE, DETECT_INVALIDPID)
+from . import (
+    __version__,
+    DFRobotUPS,
+    DFRobotUPSDaemonContext,
+    DEFAULT_BUS, DEFAULT_ADDR,
+    DETECT_OK, DETECT_NODEVICE, DETECT_INVALIDPID,
+)
 
 
 
@@ -276,17 +279,26 @@ def ups_monitor(ups, percent, interval, cmd, logger):
 
 
 
-def run(shutdown, foreground, percent, interval, cmd, debug):
-    """Setup and monitor the UPS, triggering shutdown."""
+def run(shutdown, foreground, percent, interval, cmd, debug, context=None):
+    """Setup and monitor the UPS, triggering shutdown.
+
+    The context argument is supplied if running as a daemon using the
+    DFSRobotUPSDaemonContext - it will add logging into the terminate()
+    method through a logger.  If None, this is not done.
+    """
 
     # set up the logger and detect the UPS
     ups, logger = setup(shutdown, foreground, debug)
+
+    # if we have a DaemonContext, set the logger field so we can log
+    # termination
+    if context:
+        context.set_logger(logger)
 
     # run the main monitoring and shutdown loop
     ups_monitor(ups, percent, interval, cmd, logger)
 
     # we'll never get here
-
 
 
 
@@ -411,11 +423,14 @@ if args.shutdown:
             debug=args.debug)
 
     else:
-        # we're running as a daemon
-        with daemon.DaemonContext():
+        # we're running as a daemon - use the special
+        # DFRobotUPSDaemonContext context to provide logging if the
+        # daemon is terminated with SIGTERM
+        with DFRobotUPSDaemonContext() as context:
             run(shutdown=args.shutdown, foreground=args.foreground,
                 percent=args.percent, interval=args.interval, cmd=args.cmd,
-                debug=args.debug)
+                debug=args.debug, context=context)
+
 
 
 # we're just in information mode, so just print that

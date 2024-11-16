@@ -8,6 +8,8 @@
 
 import smbus
 
+from daemon import DaemonContext
+
 
 
 # --- constants ---
@@ -206,3 +208,17 @@ class DFRobotUPS:
         """
 
         self.bus.write_byte_data(REG_ADDR, addr)
+
+
+
+class DFRobotUPSDaemonContext(DaemonContext):
+    """This class extends the normal DaemonContext class to add logging
+    when the terminate() method is called through a logger.
+    """
+
+    def set_logger(self, logger):
+        self.logger = logger
+
+    def terminate(self, signal_number, stack_frame):
+        self.logger.critical("terminate: signal received")
+        super().__terminate__(signal_number, stack_frame)

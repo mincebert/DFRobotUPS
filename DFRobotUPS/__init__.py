@@ -6,18 +6,20 @@ __version__ = "0.5.1"
 
 
 
-from .ups import (DFRobotUPS, DEFAULT_ADDR, DEFAULT_BUS, PID, DETECT_OK,
-                  DETECT_NOSMBUS, DETECT_NODEVICE, DETECT_INVALIDPID)
+from .ups import (
+    DFRobotUPS,
+    DFRobotUPSDaemonContext,
+    DEFAULT_ADDR, DEFAULT_BUS,
+    PID,
+    DETECT_OK, DETECT_NOSMBUS, DETECT_NODEVICE, DETECT_INVALIDPID,
+)
 
 
 
 __all__ = [
     "DFRobotUPS",
-    "DEFAULT_ADDR",
-    "DEFAULT_BUS",
+    "DFRobotUPSDaemonContext",
+    "DEFAULT_ADDR", "DEFAULT_BUS",
     "PID",
-    "DETECT_OK",
-    "DETECT_NOSMBUS",
-    "DETECT_NODEVICE",
-    "DETECT_INVALIDPID",
+    "DETECT_OK", "DETECT_NOSMBUS", "DETECT_NODEVICE", "DETECT_INVALIDPID",
 ]
