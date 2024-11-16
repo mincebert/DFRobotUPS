@@ -7,6 +7,7 @@
 
 
 import smbus
+from time import sleep
 
 from daemon import DaemonContext
 
@@ -20,6 +21,11 @@ from daemon import DaemonContext
 
 DEFAULT_ADDR = 0x10
 DEFAULT_BUS = 1
+
+
+# default number of retries when trying to detect the UPS HAT
+
+DEFAULT_RETRY = 10
 
 
 # the PID for the UPS HAT as returned by an I2C register (below)
@@ -222,3 +228,75 @@ class DFRobotUPSDaemonContext(DaemonContext):
     def terminate(self, signal_number, stack_frame):
         self.logger.critical("terminate: signal received")
         super().__terminate__(signal_number, stack_frame)
+
+
+
+# --- functions ---
+
+
+
+def detect_ups(*, addr=DEFAULT_ADDR, bus=DEFAULT_BUS,
+               retry=DEFAULT_RETRY, logger=None):
+
+    """Try to detect the UPS on the specified bus and I2C address,
+    retrying if required.  A DFRobotUPS() object is returned, or None,
+    if a UPS could not be found.
+
+    If a logger is supplied, messages will be logged about the detection
+    process.
+    """
+
+
+    if logger:
+        logger.info(f"searching for UPS HAT on bus {bus} at I2C address"
+                    f" 0x{addr:02x}")
+
+
+    # loop, trying to detect the UPS
+
+    tries = 0
+    while True:
+        tries += 1
+        ups = DFRobotUPS(addr=addr, bus=bus)
+
+        if ups.detect == DETECT_OK:
+            break
+
+        if logger:
+            logger.warning(
+                f"connection failed error code {ups.detect}"
+                f" ({ups.detectstr()}), try {tries} of {retry}")
+
+        # if we've run out of tries, stop
+        if tries == retry:
+            break
+
+        sleep(1)
+
+
+    # if the UPS could not be found, log the type of error encountered
+    # and return None (for 'not found')
+
+    if ups.detect != DETECT_OK:
+        if logger:
+            if ups.detect == DETECT_NODEVICE:
+                logger.error("no device found at I2C address")
+
+            elif ups.detect == DETECT_INVALIDPID:
+                logger.error("device PID invalid for UPS HAT")
+
+            else:
+                logger.error(f"detection failed - unknown reason:"
+                             " {ups.detect}")
+
+        return None
+
+
+    # log some information about the UPS
+
+    if logger:
+        logger.info(f"UPS HAT found with product ID 0x{ups.pid:02x}, firmware"
+                    + (" version %d.%d" % ups.fwver))
+
+
+    return ups
