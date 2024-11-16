@@ -195,7 +195,7 @@ def setup(shutdown, foreground, debug):
 
     # create a logger appropriate to the mode we're running in
     logger = create_logger(shutdown=shutdown, foreground=foreground,
-                        debug=debug)
+                           debug=debug)
 
     logger.info(f"startup: DFRobotUPS v{__version__}")
 
@@ -305,8 +305,7 @@ parser = argparse.ArgumentParser(
            " will be displayed and the program will terminate.  Using"
            " the -s option will cause the program to daemonise and"
            " poll the charge level and run a shutdown command, when it"
-           " drops below a specified level."
-    )
+           " drops below a specified level.")
 
 parser.add_argument(
     "-s", "--shutdown",
