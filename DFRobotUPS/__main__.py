@@ -35,6 +35,11 @@ MIN_INTERVAL = 1
 MAX_INTERVAL = 600
 
 
+# percentage at which to log 'charged' message
+
+CHARGED_PERCENT = 95
+
+
 
 # --- functions ---
 
@@ -245,6 +250,11 @@ def ups_monitor(ups, percent, interval, cmd, logger):
 
             # store the new direction as the current
             soc_direction = new_soc_direction
+
+        # if we've just charged to 95% or more, consider us charged and
+        # log a message
+        if (last_soc < CHARGED_PERCENT) and (soc >= CHARGED_PERCENT):
+            logger.info(f"charged: SoC is at {soc:.2f}%")
 
         # update the most recent SoC
         last_soc = soc
