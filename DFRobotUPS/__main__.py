@@ -389,13 +389,17 @@ if args.shutdown:
 
     if os.getuid() != 0:
         # create a temporary logger for this, with the foreground option
-        # forced, to log to the terminal
-
+        # forced, to log to stderr
         logger = create_logger(shutdown=args.shutdown, foreground=True,
                                debug=args.debug)
 
         logger.warning("not running as root - unlikely to be able to"
                        " execute shutdown command")
+
+        # remove the handlers we created - copy the list as it will
+        # change underneath us as we remove them
+        for handle in logger.handlers.copy():
+            logger.removeHandler(handle)
 
 
     # execute in either the foreground or as a daemon in the background
