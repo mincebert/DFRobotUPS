@@ -162,8 +162,8 @@ def ups_monitor(ups, percent, interval, cmd, logger):
     """
 
     logger.info(
-        f"initial SoC {ups.soc:.2f}%, polling for shutdown at"
-        f" {percent}% every {interval}s, shutdown command:"
+        f"monitoring: initial SoC {ups.soc:.2f}%, polling for shutdown"
+        f" at {percent}% every {interval}s, shutdown command:"
         f" { ' '.join(cmd) }")
 
     # initialise current SoC and set the charge direction to 0 (= no
